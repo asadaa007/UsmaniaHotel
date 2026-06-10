@@ -1,16 +1,69 @@
-# React + Vite
+# Usmania Hotel Landing Page
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A polished hotel landing page built with React, Vite, and Tailwind CSS.
 
-Currently, two official plugins are available:
+This project showcases a responsive hotel website experience with animated sections, a booking call-to-action, testimonial highlights, gallery presentation, and location details.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Responsive hero section with animated entry and booking CTA
+- Scroll progress indicator and loading screen
+- Modern navigation with section links
+- Hotel stats, about section, featured menu, and reasons to choose the hotel
+- Reviews/testimonials and photo gallery
+- Location section and floating action buttons
+- Built with motion and intersection observer effects for smooth interaction
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React 19
+- Vite 8
+- Tailwind CSS 4
+- Framer Motion
+- Lucide React icons
+- React Intersection Observer
+- ESLint for linting
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Project Structure
+
+- `src/main.jsx` — application entry point
+- `src/App.jsx` — main layout and page sections
+- `src/components/` — reusable UI sections like `Hero`, `Navbar`, `Gallery`, `Reviews`, and more
+- `src/index.css` — global styling and Tailwind imports
+
+## Getting Started
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Build the production version:
+
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+Lint the project:
+
+```bash
+npm run lint
+```
+
+## Notes
+
+- This is a frontend-only landing page template.
+- The project is configured as a private npm package in `package.json`.
