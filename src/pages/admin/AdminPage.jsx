@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LogOut, ShoppingBag, UtensilsCrossed, FileText, Archive, ChefHat,
-  LayoutDashboard, Bell,
+  LayoutDashboard, Bell, ShieldCheck,
 } from 'lucide-react';
 import { useAdminAuth, logoutAdmin } from '../../lib/adminAuth';
 import { useOrders } from '../../lib/orderStore';
@@ -15,6 +15,7 @@ import OrdersTab from './OrdersTab';
 import MenuTab from './MenuTab';
 import SiteContentTab from './SiteContentTab';
 import NotificationsTab from './NotificationsTab';
+import AdminAccessTab from './AdminAccessTab';
 import DataBackupTab from './DataBackupTab';
 
 const navGroups = [
@@ -34,6 +35,7 @@ const navGroups = [
     label: 'Settings',
     items: [
       { id: 'notifications', label: 'Notifications', Icon: Bell },
+      { id: 'access', label: 'Admin Access', Icon: ShieldCheck },
       { id: 'backup', label: 'Backup & Restore', Icon: Archive },
     ],
   },
@@ -45,6 +47,7 @@ const tabMeta = {
   menu: { title: 'Menu Content', subtitle: 'Add, edit, or remove dishes from the menu' },
   content: { title: 'Site Content', subtitle: 'Edit the text and images shown on the website' },
   notifications: { title: 'Notifications', subtitle: 'Configure how you get alerted about new orders' },
+  access: { title: 'Admin Access', subtitle: 'Manage your own sign-in' },
   backup: { title: 'Backup & Restore', subtitle: 'Export or restore your data as a JSON file' },
 };
 
@@ -188,6 +191,7 @@ export default function AdminPage() {
           {tab === 'menu' && <MenuTab />}
           {tab === 'content' && <SiteContentTab />}
           {tab === 'notifications' && <NotificationsTab />}
+          {tab === 'access' && <AdminAccessTab />}
           {tab === 'backup' && <DataBackupTab />}
         </main>
       </div>
