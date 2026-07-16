@@ -1,5 +1,7 @@
 import { getStore } from '@netlify/blobs';
 
+// Orders API — see BLOBS_SITE_ID/BLOBS_TOKEN fallback below if Blobs
+// auto-config isn't available in this deploy's runtime.
 const STORE_NAME = 'usmania-orders';
 const KEY = 'orders';
 
