@@ -79,7 +79,7 @@ export default function DataBackupTab() {
   };
 
   return (
-    <div style={{ ...cardStyle, display: 'grid', gap: '18px', maxWidth: '560px', fontFamily: font }}>
+    <div style={{ ...cardStyle, display: 'grid', gap: '18px', fontFamily: font }}>
       <div>
         <h3 style={{ color: colors.accent, fontSize: '14px', fontWeight: 700, marginBottom: '8px' }}>Why this matters</h3>
         <p style={{ color: colors.textSecondary, fontSize: '13px', lineHeight: 1.7 }}>

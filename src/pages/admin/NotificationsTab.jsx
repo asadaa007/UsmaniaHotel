@@ -72,7 +72,7 @@ export default function NotificationsTab() {
   };
 
   return (
-    <div style={{ fontFamily: font, maxWidth: '640px' }}>
+    <div style={{ fontFamily: font }}>
       <div style={cardStyle}>
         <h3 style={{ color: colors.textPrimary, fontSize: '15px', fontWeight: 700, margin: '0 0 4px' }}>New Order Alerts</h3>
         <p style={{ color: colors.textMuted, fontSize: '13px', margin: '0 0 8px', lineHeight: 1.6 }}>
