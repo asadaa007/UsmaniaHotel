@@ -3,6 +3,15 @@ import { getStore } from '@netlify/blobs';
 const STORE_NAME = 'usmania-orders';
 const KEY = 'orders';
 
+function resolveStore() {
+  const siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
+  const token = process.env.BLOBS_TOKEN;
+  if (siteID && token) {
+    return getStore({ name: STORE_NAME, siteID, token });
+  }
+  return getStore(STORE_NAME);
+}
+
 async function readOrders(store) {
   const data = await store.get(KEY, { type: 'json' });
   return Array.isArray(data) ? data : [];
@@ -12,7 +21,7 @@ export const handler = async (event) => {
   const headers = { 'Content-Type': 'application/json' };
 
   try {
-    const store = getStore(STORE_NAME);
+    const store = resolveStore();
 
     if (event.httpMethod === 'GET') {
       const orders = await readOrders(store);
