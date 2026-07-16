@@ -1,17 +1,26 @@
-import { ADMIN_PASSCODE } from '../config';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from './firebase';
 
-const SESSION_KEY = 'usmania_admin_session';
-
-export function isAdminAuthed() {
-  return sessionStorage.getItem(SESSION_KEY) === 'true';
+export async function loginAdmin(email, password) {
+  await signInWithEmailAndPassword(auth, email, password);
 }
 
-export function loginAdmin(passcode) {
-  if (passcode !== ADMIN_PASSCODE) return false;
-  sessionStorage.setItem(SESSION_KEY, 'true');
-  return true;
+export async function logoutAdmin() {
+  await signOut(auth);
 }
 
-export function logoutAdmin() {
-  sessionStorage.removeItem(SESSION_KEY);
+export function useAdminAuth() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  return { user, loading, authed: !!user };
 }

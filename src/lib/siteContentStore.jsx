@@ -1,85 +1,86 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import { defaultSiteContent } from '../data/siteContent';
 
-const STORAGE_KEY = 'usmania_site_content_v1';
-
-function loadContent() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultSiteContent;
-    const parsed = JSON.parse(raw);
-    // Merge over defaults so newly added fields/sections aren't missing for existing saved content.
-    return { ...defaultSiteContent, ...parsed };
-  } catch {
-    return defaultSiteContent;
-  }
-}
-
-function persist(content) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
-}
+const SITE_DOC = doc(db, 'content', 'site');
 
 const SiteContentContext = createContext(null);
 
 export function SiteContentProvider({ children }) {
-  const [content, setContent] = useState(loadContent);
+  const [content, setContent] = useState(defaultSiteContent);
 
   useEffect(() => {
-    persist(content);
-  }, [content]);
+    const unsubscribe = onSnapshot(SITE_DOC, (snap) => {
+      if (snap.exists()) {
+        // Merge over defaults so newly added fields/sections aren't missing for existing saved content.
+        setContent({ ...defaultSiteContent, ...snap.data() });
+      } else {
+        // Seeds Firestore with the built-in defaults the first time an admin is signed in;
+        // anonymous visitors can't write, so this silently no-ops for them until then.
+        setDoc(SITE_DOC, defaultSiteContent).catch(() => {});
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  const persist = (next) => {
+    setContent(next);
+    setDoc(SITE_DOC, next);
+  };
 
   const updateSection = (section, updates) => {
-    setContent(prev => ({ ...prev, [section]: { ...prev[section], ...updates } }));
+    persist({ ...content, [section]: { ...content[section], ...updates } });
   };
 
   const replaceSection = (section, value) => {
-    setContent(prev => ({ ...prev, [section]: value }));
+    persist({ ...content, [section]: value });
   };
 
   const addToList = (section, item) => {
     const id = Date.now();
-    setContent(prev => ({ ...prev, [section]: [...prev[section], { ...item, id }] }));
+    persist({ ...content, [section]: [...content[section], { ...item, id }] });
     return id;
   };
 
   const updateInList = (section, id, updates) => {
-    setContent(prev => ({
-      ...prev,
-      [section]: prev[section].map(i => i.id === id ? { ...i, ...updates } : i),
-    }));
+    persist({
+      ...content,
+      [section]: content[section].map(i => i.id === id ? { ...i, ...updates } : i),
+    });
   };
 
   const removeFromList = (section, id) => {
-    setContent(prev => ({ ...prev, [section]: prev[section].filter(i => i.id !== id) }));
+    persist({ ...content, [section]: content[section].filter(i => i.id !== id) });
   };
 
   const addToNestedList = (section, key, item) => {
     const id = Date.now();
-    setContent(prev => ({
-      ...prev,
-      [section]: { ...prev[section], [key]: [...prev[section][key], { ...item, id }] },
-    }));
+    persist({
+      ...content,
+      [section]: { ...content[section], [key]: [...content[section][key], { ...item, id }] },
+    });
     return id;
   };
 
   const updateInNestedList = (section, key, id, updates) => {
-    setContent(prev => ({
-      ...prev,
+    persist({
+      ...content,
       [section]: {
-        ...prev[section],
-        [key]: prev[section][key].map(i => i.id === id ? { ...i, ...updates } : i),
+        ...content[section],
+        [key]: content[section][key].map(i => i.id === id ? { ...i, ...updates } : i),
       },
-    }));
+    });
   };
 
   const removeFromNestedList = (section, key, id) => {
-    setContent(prev => ({
-      ...prev,
-      [section]: { ...prev[section], [key]: prev[section][key].filter(i => i.id !== id) },
-    }));
+    persist({
+      ...content,
+      [section]: { ...content[section], [key]: content[section][key].filter(i => i.id !== id) },
+    });
   };
 
-  const resetToDefaults = () => setContent(defaultSiteContent);
+  const resetToDefaults = () => persist(defaultSiteContent);
 
   const value = {
     content,

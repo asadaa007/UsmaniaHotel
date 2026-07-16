@@ -3,16 +3,31 @@ import { ChefHat } from 'lucide-react';
 import { loginAdmin } from '../../lib/adminAuth';
 import { colors, font, fieldStyle, labelStyle, primaryButtonStyle } from './adminTheme';
 
-export default function AdminLogin({ onSuccess }) {
-  const [passcode, setPasscode] = useState('');
-  const [error, setError] = useState('');
+const ERROR_MESSAGES = {
+  'auth/invalid-credential': 'Incorrect email or password',
+  'auth/invalid-email': 'That email address looks invalid',
+  'auth/user-not-found': 'Incorrect email or password',
+  'auth/wrong-password': 'Incorrect email or password',
+  'auth/too-many-requests': 'Too many attempts — please wait a moment and try again',
+  'auth/network-request-failed': 'Network error — check your connection and try again',
+};
 
-  const handleSubmit = (e) => {
+export default function AdminLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loginAdmin(passcode)) {
-      onSuccess();
-    } else {
-      setError('Incorrect passcode');
+    setSubmitting(true);
+    setError('');
+    try {
+      await loginAdmin(email, password);
+    } catch (err) {
+      setError(ERROR_MESSAGES[err.code] || 'Could not sign in. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -46,17 +61,31 @@ export default function AdminLogin({ onSuccess }) {
           <p style={{ color: colors.textMuted, fontSize: '13px', marginTop: '4px' }}>Management Panel</p>
         </div>
 
-        <label htmlFor="admin-passcode" style={labelStyle}>
-          Passcode
+        <label htmlFor="admin-email" style={labelStyle}>
+          Email
         </label>
         <input
-          id="admin-passcode"
-          type="password"
-          value={passcode}
-          onChange={e => { setPasscode(e.target.value); setError(''); }}
+          id="admin-email"
+          type="email"
+          value={email}
+          onChange={e => { setEmail(e.target.value); setError(''); }}
           autoFocus
+          autoComplete="username"
           aria-invalid={!!error}
-          aria-describedby={error ? 'admin-passcode-error' : undefined}
+          style={{ ...fieldStyle, padding: '11px 14px', fontSize: '14px', marginBottom: '16px' }}
+        />
+
+        <label htmlFor="admin-password" style={labelStyle}>
+          Password
+        </label>
+        <input
+          id="admin-password"
+          type="password"
+          value={password}
+          onChange={e => { setPassword(e.target.value); setError(''); }}
+          autoComplete="current-password"
+          aria-invalid={!!error}
+          aria-describedby={error ? 'admin-password-error' : undefined}
           style={{
             ...fieldStyle,
             border: error ? `1px solid ${colors.danger}` : fieldStyle.border,
@@ -65,13 +94,19 @@ export default function AdminLogin({ onSuccess }) {
             marginBottom: error ? '8px' : '20px',
           }}
         />
-        {error && <p id="admin-passcode-error" role="alert" style={{ color: colors.danger, fontSize: '12px', marginBottom: '20px' }}>{error}</p>}
+        {error && <p id="admin-password-error" role="alert" style={{ color: colors.danger, fontSize: '12px', marginBottom: '20px' }}>{error}</p>}
 
         <button
           type="submit"
-          style={{ ...primaryButtonStyle, width: '100%', justifyContent: 'center', padding: '12px 0', fontSize: '14px' }}
+          disabled={submitting}
+          style={{
+            ...primaryButtonStyle,
+            width: '100%', justifyContent: 'center', padding: '12px 0', fontSize: '14px',
+            opacity: submitting ? 0.7 : 1,
+            cursor: submitting ? 'default' : 'pointer',
+          }}
         >
-          Sign In
+          {submitting ? 'Signing In…' : 'Sign In'}
         </button>
       </form>
     </div>

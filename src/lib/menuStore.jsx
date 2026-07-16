@@ -1,47 +1,48 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import { defaultMenu } from '../data/menu';
 
-const STORAGE_KEY = 'usmania_menu_v1';
-
-function loadMenu() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultMenu;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultMenu;
-  } catch {
-    return defaultMenu;
-  }
-}
-
-function persistMenu(menu) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(menu));
-}
+const MENU_DOC = doc(db, 'content', 'menu');
 
 const MenuStoreContext = createContext(null);
 
 export function MenuStoreProvider({ children }) {
-  const [menu, setMenu] = useState(loadMenu);
+  const [menu, setMenu] = useState(defaultMenu);
 
   useEffect(() => {
-    persistMenu(menu);
-  }, [menu]);
+    const unsubscribe = onSnapshot(MENU_DOC, (snap) => {
+      if (snap.exists() && Array.isArray(snap.data().items) && snap.data().items.length > 0) {
+        setMenu(snap.data().items);
+      } else {
+        // Seeds Firestore with the built-in defaults the first time an admin is signed in;
+        // anonymous visitors can't write, so this silently no-ops for them until then.
+        setDoc(MENU_DOC, { items: defaultMenu }).catch(() => {});
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  const persist = (items) => {
+    setMenu(items);
+    setDoc(MENU_DOC, { items });
+  };
 
   const addItem = (item) => {
     const id = Date.now();
-    setMenu(prev => [...prev, { ...item, id }]);
+    persist([...menu, { ...item, id }]);
     return id;
   };
 
   const updateItem = (id, updates) => {
-    setMenu(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    persist(menu.map(i => i.id === id ? { ...i, ...updates } : i));
   };
 
   const deleteItem = (id) => {
-    setMenu(prev => prev.filter(i => i.id !== id));
+    persist(menu.filter(i => i.id !== id));
   };
 
-  const resetToDefaults = () => setMenu(defaultMenu);
+  const resetToDefaults = () => persist(defaultMenu);
 
   return (
     <MenuStoreContext.Provider value={{ menu, addItem, updateItem, deleteItem, resetToDefaults }}>

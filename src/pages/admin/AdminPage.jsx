@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogOut, ShoppingBag, UtensilsCrossed, FileText, Archive, ChefHat } from 'lucide-react';
-import { isAdminAuthed, logoutAdmin } from '../../lib/adminAuth';
+import { useAdminAuth, logoutAdmin } from '../../lib/adminAuth';
 import { useOrders } from '../../lib/orderStore';
 import { useSiteContent } from '../../lib/siteContentStore';
 import { colors, font } from './adminTheme';
@@ -26,13 +26,21 @@ const tabTitles = {
 };
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(isAdminAuthed);
+  const { authed, loading } = useAdminAuth();
   const [tab, setTab] = useState('orders');
   const { orders } = useOrders();
   const { content } = useSiteContent();
 
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: colors.textMuted, fontFamily: font, fontSize: '13px' }}>Loading…</p>
+      </div>
+    );
+  }
+
   if (!authed) {
-    return <AdminLogin onSuccess={() => setAuthed(true)} />;
+    return <AdminLogin />;
   }
 
   const pendingCount = orders.filter(o => o.status === 'Pending').length;
@@ -105,7 +113,7 @@ export default function AdminPage() {
             ← Back to site
           </Link>
           <button
-            onClick={() => { logoutAdmin(); setAuthed(false); }}
+            onClick={() => logoutAdmin()}
             style={{
               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
               borderRadius: '8px', border: 'none', background: 'transparent',
