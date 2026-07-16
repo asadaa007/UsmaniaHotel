@@ -16,6 +16,7 @@ export default function AddToCartToast() {
       role="status"
       aria-live="polite"
       aria-hidden={!visible}
+      inert={!visible}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : -16 }}
       transition={{ type: 'spring', stiffness: 320, damping: 30 }}
       style={{

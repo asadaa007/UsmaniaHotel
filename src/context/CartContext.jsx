@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useRef, useState } from 'react';
 
 const CartContext = createContext(null);
 
-const TOAST_DURATION_MS = 30000;
+const TOAST_DURATION_MS = 4000;
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
