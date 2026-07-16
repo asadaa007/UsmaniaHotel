@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
+import { PartyPopper } from 'lucide-react';
 import Receipt from './Receipt';
 import { phoneToTel, whatsappLink } from '../../config';
 import { useSiteContent } from '../../lib/siteContentStore';
@@ -26,6 +28,7 @@ export default function OrderConfirmation({ order, onClose }) {
   const receiptRef = useRef(null);
   const [generating, setGenerating] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [showThanks, setShowThanks] = useState(false);
   const autoDownloaded = useRef(false);
 
   const renderReceiptCanvas = async () => {
@@ -50,7 +53,7 @@ export default function OrderConfirmation({ order, onClose }) {
   useEffect(() => {
     if (autoDownloaded.current) return;
     autoDownloaded.current = true;
-    downloadReceipt();
+    downloadReceipt().then(() => setShowThanks(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -146,6 +149,82 @@ export default function OrderConfirmation({ order, onClose }) {
       >
         Done
       </button>
+
+      {showThanks && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="order-thanks-title"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 6500,
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            style={{
+              width: 'min(360px, 100%)',
+              background: '#1E1E1E',
+              border: '1px solid rgba(212,175,55,0.35)',
+              borderRadius: '18px',
+              padding: '28px 24px',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '50%',
+              background: 'rgba(212,175,55,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              <PartyPopper size={26} color="#D4AF37" />
+            </div>
+            <h3 id="order-thanks-title" style={{ fontFamily: "'Playfair Display', serif", color: '#FFFFFF', fontSize: '19px', fontWeight: 700, margin: '0 0 8px' }}>
+              Thank you for your order!
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px', lineHeight: 1.6, margin: '0 0 22px' }}>
+              We've downloaded your receipt as <strong style={{ color: '#D4AF37' }}>usmania-order-{order.id}.png</strong>.
+              Please check it, then send it to us on WhatsApp or call to confirm your order.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={async () => { setShowThanks(false); await sendOnWhatsapp(); }}
+                disabled={sharing}
+                style={{
+                  width: '100%',
+                  background: '#25D366', border: 'none', color: '#fff',
+                  borderRadius: '50px', padding: '13px 0',
+                  fontSize: '14px', fontWeight: 700, cursor: sharing ? 'default' : 'pointer',
+                  opacity: sharing ? 0.7 : 1,
+                }}
+              >
+                💬 Send via WhatsApp
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  width: '100%',
+                  background: 'transparent', border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'rgba(255,255,255,0.75)',
+                  borderRadius: '50px', padding: '12px 0',
+                  fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

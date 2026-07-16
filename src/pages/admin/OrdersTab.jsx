@@ -1,12 +1,26 @@
 import { useMemo, useState } from 'react';
-import { Trash2, ChevronDown, ShoppingBag, Clock, CheckCircle2, DollarSign, AlertCircle } from 'lucide-react';
+import { Trash2, ChevronDown, ShoppingBag, Clock, CheckCircle2, DollarSign, AlertCircle, Phone, MapPin, StickyNote } from 'lucide-react';
 import { useOrders, updateOrderStatus, deleteOrder, ORDER_STATUSES } from '../../lib/orderStore';
+import { phoneToTel } from '../../config';
 import { colors, font, cardStyle, fieldStyle, badgeStyle, dangerButtonStyle } from './adminTheme';
 
 const MONTH_FORMATTER = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' });
+const TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const SHORT_TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+function safeDate(value) {
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDate(value, formatter) {
+  const d = safeDate(value);
+  return d ? formatter.format(d) : '—';
+}
 
 function monthKey(date) {
-  const d = new Date(date);
+  const d = safeDate(date);
+  if (!d) return 'unknown';
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
@@ -29,7 +43,8 @@ function StatCard({ icon: Icon, label, value, accent }) {
 }
 
 function OrderRow({ order, expanded, onToggle, onStatusChange, onDelete, busy }) {
-  const orderDate = new Date(order.date);
+  const initials = (order.customer?.name || '?').trim().slice(0, 1).toUpperCase();
+
   return (
     <>
       <tr
@@ -42,14 +57,24 @@ function OrderRow({ order, expanded, onToggle, onStatusChange, onDelete, busy })
         style={{ cursor: 'pointer', borderBottom: expanded ? 'none' : `1px solid ${colors.borderLight}` }}
       >
         <td style={tdStyle}>
-          <span style={{ color: colors.textPrimary, fontWeight: 600, fontSize: '13px' }}>{order.id}</span>
+          <span style={{ color: colors.textPrimary, fontWeight: 700, fontSize: '13px' }}>{order.id}</span>
         </td>
         <td style={tdStyle}>
-          <div style={{ color: colors.textPrimary, fontSize: '13px' }}>{order.customer.name}</div>
-          <div style={{ color: colors.textMuted, fontSize: '11px' }}>{order.customer.phone}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
+              background: colors.accentMuted, color: colors.accent,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '12px', fontWeight: 700,
+            }}>{initials}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: colors.textPrimary, fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{order.customer?.name}</div>
+              <div style={{ color: colors.textMuted, fontSize: '11px' }}>{order.customer?.phone}</div>
+            </div>
+          </div>
         </td>
         <td style={tdStyle}>
-          <span style={{ color: colors.textSecondary, fontSize: '13px' }}>{order.items.length} item{order.items.length === 1 ? '' : 's'}</span>
+          <span style={{ color: colors.textSecondary, fontSize: '13px' }}>{order.items?.length || 0} item{(order.items?.length || 0) === 1 ? '' : 's'}</span>
         </td>
         <td style={tdStyle}>
           <span style={{ color: colors.accent, fontWeight: 700, fontSize: '13px' }}>Rs {order.total}</span>
@@ -58,8 +83,8 @@ function OrderRow({ order, expanded, onToggle, onStatusChange, onDelete, busy })
           <span style={badgeStyle(order.status)}>{order.status}</span>
         </td>
         <td style={tdStyle}>
-          <span style={{ color: colors.textMuted, fontSize: '12px' }}>
-            {orderDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          <span style={{ color: colors.textSecondary, fontSize: '12px' }}>
+            {formatDate(order.date, SHORT_TIME_FORMATTER)}
           </span>
         </td>
         <td style={{ ...tdStyle, width: '32px' }}>
@@ -69,41 +94,80 @@ function OrderRow({ order, expanded, onToggle, onStatusChange, onDelete, busy })
       {expanded && (
         <tr style={{ borderBottom: `1px solid ${colors.borderLight}` }}>
           <td colSpan={7} style={{ padding: '0 16px 20px', background: colors.surfaceAlt }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', paddingTop: '16px' }}>
-              <div>
-                <div style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 600, marginBottom: '8px', letterSpacing: '0.3px' }}>ITEMS</div>
-                {order.items.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: colors.textSecondary, padding: '3px 0' }}>
-                    <span>{item.name} × {item.qty}</span>
-                    <span>Rs {item.price * item.qty}</span>
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px',
+              marginTop: '16px',
+            }}>
+              {/* Receipt-style items + total */}
+              <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: '10px', padding: '16px', overflow: 'hidden' }}>
+                <div style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 700, marginBottom: '10px', letterSpacing: '0.4px' }}>ORDER ITEMS</div>
+                {(order.items || []).map(item => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '7px 0', borderBottom: `1px dashed ${colors.borderLight}` }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '13px', color: colors.textPrimary, fontWeight: 600 }}>{item.name}</div>
+                      <div style={{ fontSize: '11px', color: colors.textMuted }}>Rs {item.price} × {item.qty}</div>
+                    </div>
+                    <div style={{ fontSize: '13px', color: colors.textSecondary, fontWeight: 700, whiteSpace: 'nowrap' }}>Rs {item.price * item.qty}</div>
                   </div>
                 ))}
-              </div>
-              <div>
-                <div style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 600, marginBottom: '8px', letterSpacing: '0.3px' }}>DELIVERY</div>
-                <div style={{ fontSize: '13px', color: colors.textSecondary, lineHeight: 1.7 }}>
-                  <div>{order.customer.address}</div>
-                  {order.customer.notes && <div style={{ marginTop: '4px', fontStyle: 'italic' }}>"{order.customer.notes}"</div>}
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginTop: '12px', padding: '10px 12px', borderRadius: '8px',
+                  background: colors.accentMuted,
+                }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: colors.accent, letterSpacing: '0.3px' }}>TOTAL</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: colors.accent }}>Rs {order.total}</span>
                 </div>
               </div>
-              <div>
-                <div style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 600, marginBottom: '8px', letterSpacing: '0.3px' }}>ACTIONS</div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <select
-                    value={order.status}
-                    disabled={busy}
-                    onChange={e => onStatusChange(order.id, e.target.value)}
-                    style={{ ...fieldStyle, width: 'auto', padding: '6px 10px', fontSize: '12px', opacity: busy ? 0.6 : 1 }}
-                  >
-                    {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  <button
-                    onClick={() => { if (confirm(`Delete order ${order.id}?`)) onDelete(order.id); }}
-                    aria-label={`Delete order ${order.id}`}
-                    disabled={busy}
-                    style={{ ...dangerButtonStyle, opacity: busy ? 0.6 : 1 }}
-                  ><Trash2 size={14} /></button>
+
+              {/* Customer + delivery */}
+              <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: '10px', padding: '16px' }}>
+                <div style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 700, marginBottom: '10px', letterSpacing: '0.4px' }}>CUSTOMER & DELIVERY</div>
+                <div style={{ display: 'grid', gap: '10px', fontSize: '13px', color: colors.textSecondary }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Phone size={14} color={colors.textMuted} style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <a href={phoneToTel(order.customer?.phone || '')} style={{ color: colors.textSecondary, textDecoration: 'none' }}>{order.customer?.phone}</a>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <MapPin size={14} color={colors.textMuted} style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span>{order.customer?.address}</span>
+                  </div>
+                  {order.customer?.notes && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <StickyNote size={14} color={colors.textMuted} style={{ marginTop: '2px', flexShrink: 0 }} />
+                      <span style={{ fontStyle: 'italic' }}>"{order.customer.notes}"</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Clock size={14} color={colors.textMuted} style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span>Placed {formatDate(order.date, TIME_FORMATTER)}</span>
+                  </div>
                 </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: '10px', padding: '16px' }}>
+                <div style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 700, marginBottom: '10px', letterSpacing: '0.4px' }}>ACTIONS</div>
+                <label style={{ display: 'block', color: colors.textMuted, fontSize: '11px', marginBottom: '6px' }}>Status</label>
+                <select
+                  value={order.status}
+                  disabled={busy}
+                  onChange={e => onStatusChange(order.id, e.target.value)}
+                  style={{ ...fieldStyle, marginBottom: '12px', opacity: busy ? 0.6 : 1 }}
+                >
+                  {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button
+                  onClick={() => { if (confirm(`Delete order ${order.id}?`)) onDelete(order.id); }}
+                  disabled={busy}
+                  style={{
+                    ...dangerButtonStyle,
+                    width: '100%', height: 'auto', padding: '9px 0',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    fontSize: '12px', fontWeight: 600, fontFamily: font,
+                    opacity: busy ? 0.6 : 1,
+                  }}
+                ><Trash2 size={14} /> Delete Order</button>
               </div>
             </div>
           </td>
@@ -127,7 +191,8 @@ export default function OrdersTab() {
     const map = new Map();
     orders.forEach(o => {
       const key = monthKey(o.date);
-      if (!map.has(key)) map.set(key, MONTH_FORMATTER.format(new Date(o.date)));
+      const d = safeDate(o.date);
+      if (!map.has(key)) map.set(key, d ? MONTH_FORMATTER.format(d) : 'Unknown date');
     });
     return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
   }, [orders]);
@@ -139,9 +204,9 @@ export default function OrdersTab() {
 
   const stats = useMemo(() => {
     const pending = filteredOrders.filter(o => o.status === 'Pending').length;
-    const revenue = filteredOrders.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + o.total, 0);
+    const revenue = filteredOrders.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + (o.total || 0), 0);
     const today = new Date().toDateString();
-    const todayCount = filteredOrders.filter(o => new Date(o.date).toDateString() === today).length;
+    const todayCount = filteredOrders.filter(o => safeDate(o.date)?.toDateString() === today).length;
     return { total: filteredOrders.length, pending, revenue, todayCount };
   }, [filteredOrders]);
 
@@ -228,8 +293,8 @@ export default function OrdersTab() {
                   <th style={thStyle}>Items</th>
                   <th style={thStyle}>Total</th>
                   <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Date</th>
-                  <th style={thStyle}></th>
+                  <th style={thStyle}>Placed</th>
+                  <th style={{ ...thStyle, width: '32px' }}></th>
                 </tr>
               </thead>
               <tbody>
