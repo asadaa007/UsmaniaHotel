@@ -9,10 +9,11 @@ async function readOrders(store) {
 }
 
 export const handler = async (event) => {
-  const store = getStore(STORE_NAME);
   const headers = { 'Content-Type': 'application/json' };
 
   try {
+    const store = getStore(STORE_NAME);
+
     if (event.httpMethod === 'GET') {
       const orders = await readOrders(store);
       return { statusCode: 200, headers, body: JSON.stringify(orders) };
