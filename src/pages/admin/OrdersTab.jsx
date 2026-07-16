@@ -3,44 +3,8 @@ import { Trash2, ChevronDown, ShoppingBag, Clock, CheckCircle2, DollarSign, Aler
 import { useOrders, updateOrderStatus, deleteOrder, ORDER_STATUSES } from '../../lib/orderStore';
 import { phoneToTel } from '../../config';
 import { colors, font, cardStyle, fieldStyle, badgeStyle, dangerButtonStyle } from './adminTheme';
-
-const MONTH_FORMATTER = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' });
-const TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-const SHORT_TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-
-function safeDate(value) {
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-function formatDate(value, formatter) {
-  const d = safeDate(value);
-  return d ? formatter.format(d) : '—';
-}
-
-function monthKey(date) {
-  const d = safeDate(date);
-  if (!d) return 'unknown';
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function StatCard({ icon: Icon, label, value, accent }) {
-  return (
-    <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '14px', padding: '18px 20px' }}>
-      <div style={{
-        width: '38px', height: '38px', borderRadius: '9px', flexShrink: 0,
-        background: accent ? colors.accentMuted : colors.surfaceHover,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <Icon size={18} color={accent ? colors.accent : colors.textSecondary} />
-      </div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ color: colors.textPrimary, fontSize: '20px', fontWeight: 700, lineHeight: 1.2 }}>{value}</div>
-        <div style={{ color: colors.textMuted, fontSize: '12px' }}>{label}</div>
-      </div>
-    </div>
-  );
-}
+import { MONTH_FORMATTER, TIME_FORMATTER, SHORT_TIME_FORMATTER, safeDate, formatDate, monthKey } from './orderUtils';
+import StatCard from './StatCard';
 
 function OrderRow({ order, expanded, onToggle, onStatusChange, onDelete, busy }) {
   const initials = (order.customer?.name || '?').trim().slice(0, 1).toUpperCase();

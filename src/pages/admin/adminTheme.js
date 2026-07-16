@@ -40,11 +40,28 @@ export const radius = {
   lg: '12px',
 };
 
+export const shadow = {
+  sm: '0 1px 2px rgba(0,0,0,0.3)',
+  md: '0 6px 20px rgba(0,0,0,0.28)',
+  lg: '0 16px 48px rgba(0,0,0,0.4)',
+};
+
 export const cardStyle = {
   background: colors.surface,
   border: `1px solid ${colors.border}`,
   borderRadius: radius.lg,
   padding: '20px',
+  boxShadow: shadow.sm,
+};
+
+export const sectionLabelStyle = {
+  color: colors.textMuted,
+  fontSize: '10px',
+  fontWeight: 700,
+  letterSpacing: '0.8px',
+  textTransform: 'uppercase',
+  padding: '0 12px',
+  margin: '18px 0 6px',
 };
 
 export const primaryButtonStyle = {
