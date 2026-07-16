@@ -1,43 +1,24 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-
-const galleryImages = [
-  {
-    src: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=800&q=80',
-    alt: 'Chicken Jalfrezi - Signature Dish',
-    span: 'double',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=600&q=80',
-    alt: 'Traditional Pakistani Kababs',
-    span: 'single',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80',
-    alt: 'Authentic Pakistani Biryani',
-    span: 'single',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80',
-    alt: 'Spiced Chicken Karahi',
-    span: 'single',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80',
-    alt: 'Restaurant Dining Area',
-    span: 'double',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600&q=80',
-    alt: 'Fresh Pakistani Naan',
-    span: 'single',
-  },
-];
+import { X } from 'lucide-react';
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function Gallery() {
+  const { content } = useSiteContent();
+  const galleryImages = content.gallery;
   const [lightbox, setLightbox] = useState(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const openLightbox = (img) => { setLightbox(img); setLightboxOpen(true); };
+  const closeLightbox = () => setLightboxOpen(false);
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKeyDown = (e) => { if (e.key === 'Escape') closeLightbox(); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [lightboxOpen]);
 
   return (
     <section
@@ -78,7 +59,7 @@ export default function Gallery() {
         </motion.div>
 
         {/* Masonry Grid */}
-        <div style={{
+        <div id="gallery-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gridTemplateRows: 'auto',
@@ -86,11 +67,15 @@ export default function Gallery() {
         }}>
           {galleryImages.map((img, i) => (
             <motion.div
-              key={img.src}
+              key={img.id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              onClick={() => setLightbox(img)}
+              onClick={() => openLightbox(img)}
+              role="button"
+              tabIndex={0}
+              aria-label={`View larger image: ${img.alt}`}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(img); } }}
               style={{
                 gridColumn: img.span === 'double' ? 'span 2' : 'span 1',
                 borderRadius: '16px',
@@ -137,60 +122,61 @@ export default function Gallery() {
       </div>
 
       {/* Lightbox */}
-      <AnimatePresence>
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label={lightbox ? lightbox.alt : 'Image viewer'}
+        aria-hidden={!lightboxOpen}
+        inert={!lightboxOpen}
+        animate={{ opacity: lightboxOpen ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={closeLightbox}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 3000,
+          background: 'rgba(0,0,0,0.92)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px',
+          backdropFilter: 'blur(10px)',
+          pointerEvents: lightboxOpen ? 'auto' : 'none',
+        }}
+      >
         {lightbox && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setLightbox(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 3000,
-              background: 'rgba(0,0,0,0.92)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '20px',
-              backdropFilter: 'blur(10px)',
-            }}
+            animate={{ scale: lightboxOpen ? 1 : 0.8, opacity: lightboxOpen ? 1 : 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            onClick={e => e.stopPropagation()}
+            style={{ position: 'relative', maxWidth: '900px', width: '100%' }}
           >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              onClick={e => e.stopPropagation()}
-              style={{ position: 'relative', maxWidth: '900px', width: '100%' }}
-            >
-              <img
-                src={lightbox.src.replace('w=600', 'w=900').replace('w=800', 'w=1200')}
-                alt={lightbox.alt}
-                style={{
-                  width: '100%',
-                  maxHeight: '80vh',
-                  objectFit: 'contain',
-                  borderRadius: '16px',
-                  display: 'block',
-                }}
-              />
-              <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                <p style={{ color: '#D4AF37', fontSize: '16px', fontWeight: 600 }}>{lightbox.alt}</p>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Usmania Hotel · Faisalabad</p>
-              </div>
-              <button
-                onClick={() => setLightbox(null)}
-                style={{
-                  position: 'absolute', top: '-16px', right: '-16px',
-                  background: '#D4AF37', border: 'none',
-                  color: '#0F3D2E', borderRadius: '50%',
-                  width: '40px', height: '40px', cursor: 'pointer',
-                  fontSize: '18px', fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                }}
-              >✕</button>
-            </motion.div>
+            <img
+              src={lightbox.src.replace('w=600', 'w=900').replace('w=800', 'w=1200')}
+              alt={lightbox.alt}
+              style={{
+                width: '100%',
+                maxHeight: '80vh',
+                objectFit: 'contain',
+                borderRadius: '16px',
+                display: 'block',
+              }}
+            />
+            <div style={{ textAlign: 'center', marginTop: '16px' }}>
+              <p style={{ color: '#D4AF37', fontSize: '16px', fontWeight: 600 }}>{lightbox.alt}</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Usmania Hotel · Faisalabad</p>
+            </div>
+            <button
+              onClick={closeLightbox}
+              aria-label="Close image"
+              style={{
+                position: 'absolute', top: '-16px', right: '-16px',
+                background: '#D4AF37', border: 'none',
+                color: '#0F3D2E', borderRadius: '50%',
+                width: '44px', height: '44px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+              }}
+            ><X size={20} /></button>
           </motion.div>
         )}
-      </AnimatePresence>
+      </motion.div>
 
       <style>{`
         @media (max-width: 768px) {

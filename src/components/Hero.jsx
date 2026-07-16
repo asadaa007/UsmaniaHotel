@@ -1,76 +1,75 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-
-const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1567337710282-00832b415979?w=1920&q=80',
-  'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=1920&q=80',
-  'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=1920&q=80',
-];
+import { phoneToTel } from '../config';
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function Hero() {
+  const { content } = useSiteContent();
+  const { business, hero } = content;
+  const heroImages = hero.images;
   const [imgIdx, setImgIdx] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setImgIdx(i => (i + 1) % HERO_IMAGES.length), 5000);
+    const t = setInterval(() => setImgIdx(i => (i + 1) % heroImages.length), 5000);
     return () => clearInterval(t);
-  }, []);
+  }, [heroImages.length]);
 
   return (
     <section
       id="home"
       style={{
         position: 'relative',
-        height: '100vh',
-        minHeight: '700px',
-        overflow: 'hidden',
+        minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      {/* Background Images */}
-      {HERO_IMAGES.map((src, i) => (
-        <div
-          key={src}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url(${src})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: i === imgIdx ? 1 : 0,
-            transition: 'opacity 1.2s ease-in-out',
-            transform: i === imgIdx ? 'scale(1.03)' : 'scale(1)',
-            transitionProperty: 'opacity, transform',
-            transitionDuration: '1.2s, 8s',
-          }}
-        />
-      ))}
+      {/* Background layer — clipped independently so it never constrains content height */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        {heroImages.map((src, i) => (
+          <div
+            key={src}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: `url(${src})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: i === imgIdx ? 1 : 0,
+              transition: 'opacity 1.2s ease-in-out',
+              transform: i === imgIdx ? 'scale(1.03)' : 'scale(1)',
+              transitionProperty: 'opacity, transform',
+              transitionDuration: '1.2s, 8s',
+            }}
+          />
+        ))}
 
-      {/* Overlays */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(15,61,46,0.88) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.3) 100%)' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
+        {/* Overlays */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(15,61,46,0.88) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.3) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
 
-      {/* Gold decorative lines */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        height: '3px',
-        background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)',
-      }} />
+        {/* Gold decorative lines */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: '3px',
+          background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)',
+        }} />
 
-      {/* Floating gold orbs */}
-      <div style={{
-        position: 'absolute', width: '400px', height: '400px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)',
-        top: '10%', left: '-5%',
-      }} />
-      <div style={{
-        position: 'absolute', width: '300px', height: '300px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%)',
-        bottom: '10%', right: '5%',
-      }} />
+        {/* Floating gold orbs */}
+        <div style={{
+          position: 'absolute', width: '400px', height: '400px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)',
+          top: '10%', left: '-5%',
+        }} />
+        <div style={{
+          position: 'absolute', width: '300px', height: '300px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%)',
+          bottom: '10%', right: '5%',
+        }} />
+      </div>
 
       {/* Content */}
       <div style={{
@@ -78,6 +77,8 @@ export default function Hero() {
         maxWidth: '1280px',
         width: '100%',
         padding: '0 24px',
+        paddingTop: 'clamp(90px, 14vh, 130px)',
+        paddingBottom: '110px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
@@ -101,7 +102,7 @@ export default function Hero() {
           }}
         >
           <span style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '2px', fontWeight: 600 }}>
-            ✦ FAISALABAD'S LEGENDARY RESTAURANT ✦
+            {hero.badge}
           </span>
         </motion.div>
 
@@ -121,9 +122,9 @@ export default function Hero() {
             marginBottom: '20px',
           }}
         >
-          Serving Faisalabad's Favorite{' '}
-          <span style={{ color: '#D4AF37' }}>Traditional</span>{' '}
-          Flavors Since Generations
+          {hero.headingBefore}{' '}
+          <span style={{ color: '#D4AF37' }}>{hero.headingHighlight}</span>{' '}
+          {hero.headingAfter}
         </motion.h1>
 
         {/* Sub */}
@@ -139,8 +140,7 @@ export default function Hero() {
             marginBottom: '36px',
           }}
         >
-          Experience authentic Pakistani cuisine, signature Chicken Jalfrezi, Chapli Kabab,
-          and family recipes that have made Usmania Hotel a local landmark.
+          {hero.subtext}
         </motion.p>
 
         {/* Rating */}
@@ -165,10 +165,10 @@ export default function Hero() {
             gap: '8px',
           }}>
             <span style={{ color: '#D4AF37', fontSize: '18px' }}>★★★★</span>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: '16px' }}>4.0</span>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: '16px' }}>{business.ratingValue.toFixed(1)}</span>
             <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>/ 5.0</span>
           </div>
-          <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>619+ Reviews</span>
+          <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>{business.ratingCount}+ Reviews</span>
         </motion.div>
 
         {/* CTAs */}
@@ -199,7 +199,7 @@ export default function Hero() {
             🍽️ View Menu
           </a>
           <a
-            href="tel:+924126418171"
+            href={phoneToTel(business.phoneDisplay)}
             style={{
               background: 'rgba(255,255,255,0.1)',
               border: '2px solid rgba(255,255,255,0.5)',
@@ -260,21 +260,33 @@ export default function Hero() {
         display: 'flex',
         gap: '8px',
       }}>
-        {HERO_IMAGES.map((_, i) => (
+        {heroImages.map((_, i) => (
           <button
             key={i}
             onClick={() => setImgIdx(i)}
+            aria-label={`Show slide ${i + 1} of ${heroImages.length}`}
+            aria-current={i === imgIdx}
             style={{
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <span aria-hidden="true" style={{
               width: i === imgIdx ? '24px' : '8px',
               height: '8px',
               borderRadius: '4px',
               background: i === imgIdx ? '#D4AF37' : 'rgba(255,255,255,0.4)',
-              border: 'none',
-              cursor: 'pointer',
               transition: 'all 0.3s',
-              padding: 0,
-            }}
-          />
+              display: 'block',
+            }} />
+          </button>
         ))}
       </div>
     </section>

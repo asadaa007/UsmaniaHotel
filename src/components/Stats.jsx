@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useSiteContent } from '../lib/siteContentStore';
 
 function Counter({ target, suffix = '', prefix = '' }) {
   const [count, setCount] = useState(0);
@@ -30,14 +31,9 @@ function Counter({ target, suffix = '', prefix = '' }) {
   );
 }
 
-const stats = [
-  { icon: '⭐', value: 619, suffix: '+', label: 'Customer Reviews', sub: 'On Google Maps' },
-  { icon: '🏆', value: 4, suffix: '.0/5', label: 'Star Rating', sub: 'Highly Rated' },
-  { icon: '🕐', value: 365, suffix: '', label: 'Days Open', sub: 'Every Year' },
-  { icon: '👨‍👩‍👧‍👦', value: 1000, suffix: '+', label: 'Happy Families', sub: 'Served Daily' },
-];
-
 export default function Stats() {
+  const { content } = useSiteContent();
+  const { stats } = content;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
@@ -93,7 +89,7 @@ export default function Stats() {
         }}>
           {stats.map((s, i) => (
             <motion.div
-              key={s.label}
+              key={s.id}
               initial={{ opacity: 0, y: 40 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: i * 0.15 }}

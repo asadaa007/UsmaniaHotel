@@ -1,7 +1,11 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { phoneToTel } from '../config';
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function OrderCTA() {
+  const { content } = useSiteContent();
+  const { business, orderCta } = content;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
@@ -65,8 +69,8 @@ export default function OrderCTA() {
             lineHeight: 1.15,
             marginBottom: '20px',
           }}>
-            Craving Authentic{' '}
-            <span style={{ color: '#D4AF37' }}>Pakistani Food?</span>
+            {orderCta.heading}{' '}
+            <span style={{ color: '#D4AF37' }}>{orderCta.headingHighlight}</span>
           </h2>
 
           <p style={{
@@ -76,8 +80,7 @@ export default function OrderCTA() {
             maxWidth: '560px',
             margin: '0 auto 48px',
           }}>
-            Call us now, visit us in Aminpur Bazar, or get directions to experience
-            Faisalabad's most legendary traditional Pakistani flavors.
+            {orderCta.subtext}
           </p>
 
           <div style={{
@@ -88,7 +91,7 @@ export default function OrderCTA() {
             marginBottom: '40px',
           }}>
             <motion.a
-              href="tel:+924126418171"
+              href={phoneToTel(business.phoneDisplay)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
               style={{
@@ -109,7 +112,7 @@ export default function OrderCTA() {
             </motion.a>
 
             <motion.a
-              href="https://maps.google.com/?q=Usmania+Hotel+Aminpur+Bazar+Faisalabad"
+              href={business.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
@@ -150,10 +153,10 @@ export default function OrderCTA() {
               width: '10px', height: '10px', borderRadius: '50%',
               background: '#4CAF50',
             }} />
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>Open Daily 9:00 AM – 11:30 PM</span>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>Open Daily {business.hoursTime}</span>
             <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-            <a href="tel:+924126418171" style={{ color: '#D4AF37', fontSize: '18px', fontWeight: 700, textDecoration: 'none', fontFamily: "'Playfair Display', serif" }}>
-              +92 41 2641817
+            <a href={phoneToTel(business.phoneDisplay)} style={{ color: '#D4AF37', fontSize: '18px', fontWeight: 700, textDecoration: 'none', fontFamily: "'Playfair Display', serif" }}>
+              {business.phoneDisplay}
             </a>
           </div>
         </motion.div>

@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function About() {
+  const { content } = useSiteContent();
+  const { about } = content;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 });
 
   return (
@@ -43,8 +46,8 @@ export default function About() {
               position: 'relative',
             }}>
               <img
-                src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80"
-                alt="Usmania Hotel Interior"
+                src={about.image}
+                alt="Restaurant Interior"
                 style={{ width: '100%', height: '520px', objectFit: 'cover', display: 'block' }}
                 loading="lazy"
               />
@@ -77,8 +80,7 @@ export default function About() {
               }}
             >
               <span style={{ color: '#D4AF37', fontSize: '24px' }}>🏅</span>
-              <span style={{ color: '#D4AF37', fontSize: '9px', fontWeight: 700, letterSpacing: '1px' }}>LEGENDARY</span>
-              <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '8px' }}>TASTE</span>
+              <span style={{ color: '#D4AF37', fontSize: '9px', fontWeight: 700, letterSpacing: '1px' }}>{about.badgeTop}</span>
             </motion.div>
 
             {/* Experience badge */}
@@ -97,7 +99,7 @@ export default function About() {
               }}
             >
               <div style={{ color: '#0F3D2E', fontSize: '28px', fontWeight: 800, fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>
-                Generations
+                {about.badgeBottom}
               </div>
               <div style={{ color: 'rgba(15,61,46,0.8)', fontSize: '11px', fontWeight: 600, marginTop: '4px' }}>
                 OF AUTHENTIC FLAVORS
@@ -112,7 +114,7 @@ export default function About() {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <p style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '4px', fontWeight: 600, marginBottom: '14px' }}>
-              OUR STORY
+              {about.eyebrow}
             </p>
             <h2 style={{
               fontFamily: "'Playfair Display', serif",
@@ -122,9 +124,9 @@ export default function About() {
               lineHeight: 1.2,
               marginBottom: '24px',
             }}>
-              A Legacy of Taste,{' '}
-              <span style={{ color: '#D4AF37' }}>Tradition</span>{' '}
-              & Authentic Flavors
+              {about.heading}{' '}
+              <span style={{ color: '#D4AF37' }}>{about.headingHighlight}</span>{' '}
+              {about.headingAfter}
             </h2>
 
             <p style={{
@@ -133,9 +135,7 @@ export default function About() {
               lineHeight: 1.8,
               marginBottom: '20px',
             }}>
-              Usmania Hotel has remained one of Faisalabad's most beloved restaurants for decades.
-              Known for its authentic recipes, traditional cooking methods, and unforgettable flavors,
-              generations of families continue to enjoy their favorite meals here.
+              {about.paragraph1}
             </p>
 
             <p style={{
@@ -144,21 +144,14 @@ export default function About() {
               lineHeight: 1.8,
               marginBottom: '40px',
             }}>
-              Located in the heart of Aminpur Bazar near Katchery Bazar Clock Tower, our kitchen
-              has been serving the same legendary Chicken Jalfrezi, Chapli Kabab, and traditional
-              Pakistani dishes that have become synonymous with the finest dining in Faisalabad.
+              {about.paragraph2}
             </p>
 
             {/* Highlights */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
-              {[
-                { icon: '🍳', text: 'Traditional Recipes' },
-                { icon: '🌿', text: 'Fresh Daily Ingredients' },
-                { icon: '👨‍🍳', text: 'Expert Chefs' },
-                { icon: '🏠', text: 'Family Atmosphere' },
-              ].map(item => (
+              {about.highlights.map(item => (
                 <div
-                  key={item.text}
+                  key={item.id}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -176,7 +169,7 @@ export default function About() {
             </div>
 
             <a
-              href="#menu"
+              href="/menu"
               style={{
                 background: 'linear-gradient(135deg, #0F3D2E, #1A5C44)',
                 color: '#D4AF37',

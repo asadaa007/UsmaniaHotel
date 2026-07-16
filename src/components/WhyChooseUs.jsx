@@ -1,53 +1,11 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-
-const features = [
-  {
-    icon: '🌶️',
-    title: 'Authentic Pakistani Taste',
-    desc: 'Recipes passed down through generations, preserving the true essence of traditional Pakistani cuisine.',
-    color: '#D4AF37',
-  },
-  {
-    icon: '🌿',
-    title: 'Fresh Ingredients Daily',
-    desc: 'We source only the freshest vegetables, meats, and spices every morning to guarantee quality in every bite.',
-    color: '#2A7A5C',
-  },
-  {
-    icon: '👨‍👩‍👧',
-    title: 'Family Friendly Environment',
-    desc: 'A warm, welcoming atmosphere that has hosted generations of families for every occasion.',
-    color: '#D4AF37',
-  },
-  {
-    icon: '✨',
-    title: 'Hygienic Food Preparation',
-    desc: 'We maintain the highest standards of cleanliness and hygiene throughout our kitchen and dining area.',
-    color: '#2A7A5C',
-  },
-  {
-    icon: '💰',
-    title: 'Affordable Pricing',
-    desc: 'Premium traditional flavors at prices that make authentic Pakistani cuisine accessible to everyone.',
-    color: '#D4AF37',
-  },
-  {
-    icon: '⚡',
-    title: 'Quick Service',
-    desc: 'Whether dining in, taking away, or ordering delivery — we respect your time with prompt service.',
-    color: '#2A7A5C',
-  },
-];
-
-const services = [
-  { icon: '🪑', label: 'Dine-In' },
-  { icon: '🚗', label: 'Drive-Through' },
-  { icon: '📦', label: 'Takeaway' },
-  { icon: '🛵', label: 'Food Delivery' },
-];
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function WhyChooseUs() {
+  const { content } = useSiteContent();
+  const { whyChooseUs } = content;
+  const { features, services } = whyChooseUs;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
@@ -82,7 +40,7 @@ export default function WhyChooseUs() {
           style={{ textAlign: 'center', marginBottom: '70px' }}
         >
           <p style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '4px', fontWeight: 600, marginBottom: '14px' }}>
-            WHY CHOOSE US
+            {whyChooseUs.eyebrow}
           </p>
           <h2 style={{
             fontFamily: "'Playfair Display', serif",
@@ -92,11 +50,10 @@ export default function WhyChooseUs() {
             lineHeight: 1.2,
             marginBottom: '16px',
           }}>
-            What Makes Us{' '}
-            <span style={{ color: '#D4AF37' }}>Faisalabad's Favorite</span>
+            {whyChooseUs.heading}
           </h2>
           <p style={{ color: '#666', maxWidth: '560px', margin: '0 auto', fontSize: '16px', lineHeight: 1.7 }}>
-            For generations, Usmania Hotel has set the standard for authentic Pakistani cuisine in Faisalabad.
+            {whyChooseUs.subtext}
           </p>
         </motion.div>
 
@@ -109,7 +66,7 @@ export default function WhyChooseUs() {
         }}>
           {features.map((f, i) => (
             <motion.div
-              key={f.title}
+              key={f.id}
               initial={{ opacity: 0, y: 40 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: i * 0.1 }}
@@ -196,7 +153,7 @@ export default function WhyChooseUs() {
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             {services.map(s => (
               <div
-                key={s.label}
+                key={s.id}
                 style={{
                   background: 'rgba(255,255,255,0.08)',
                   border: '1px solid rgba(212,175,55,0.25)',

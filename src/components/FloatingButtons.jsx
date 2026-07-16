@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion';
+import { phoneToTel, whatsappLink } from '../config';
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function FloatingButtons() {
+  const { content } = useSiteContent();
   return (
     <>
       {/* WhatsApp */}
       <motion.a
-        href="https://wa.me/924126418171?text=Hi!%20I'd%20like%20to%20order%20from%20Usmania%20Hotel"
+        href={whatsappLink(content.business.whatsappNumber, "Hi! I'd like to order from Usmania Hotel")}
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}
@@ -50,7 +53,7 @@ export default function FloatingButtons() {
         }}
       >
         <a
-          href="tel:+924126418171"
+          href={phoneToTel(content.business.phoneDisplay)}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -64,7 +67,7 @@ export default function FloatingButtons() {
             fontWeight: 700,
           }}
         >
-          📞 Call Now: +92 41 2641817
+          📞 Call Now: {content.business.phoneDisplay}
         </a>
       </div>
 

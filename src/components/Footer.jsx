@@ -1,22 +1,18 @@
-import { motion } from 'framer-motion';
+import { phoneToTel } from '../config';
+import { useSiteContent } from '../lib/siteContentStore';
 
 const quickLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'About Us', href: '#about' },
-  { label: 'Our Menu', href: '#menu' },
-  { label: 'Gallery', href: '#gallery' },
-  { label: 'Reviews', href: '#reviews' },
-  { label: 'Contact', href: '#contact' },
-];
-
-const socialLinks = [
-  { icon: '📘', label: 'Facebook', href: '#' },
-  { icon: '📸', label: 'Instagram', href: '#' },
-  { icon: '🐦', label: 'Twitter', href: '#' },
-  { icon: '📹', label: 'YouTube', href: '#' },
+  { label: 'Home', href: '/#home' },
+  { label: 'About Us', href: '/#about' },
+  { label: 'Our Menu', href: '/menu' },
+  { label: 'Gallery', href: '/#gallery' },
+  { label: 'Reviews', href: '/#reviews' },
+  { label: 'Contact', href: '/#contact' },
 ];
 
 export default function Footer() {
+  const { content } = useSiteContent();
+  const { business, footer } = content;
   return (
     <footer style={{
       background: '#111111',
@@ -49,16 +45,13 @@ export default function Footer() {
                 boxShadow: '0 0 0 3px rgba(212,175,55,0.2)',
               }}>🍽️</div>
               <div>
-                <div style={{ fontFamily: "'Playfair Display', serif", color: '#D4AF37', fontSize: '20px', fontWeight: 700, lineHeight: 1 }}>
-                  USMANIA
-                </div>
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', letterSpacing: '4px', marginTop: '2px' }}>
-                  HOTEL
+                <div style={{ fontFamily: "'Playfair Display', serif", color: '#D4AF37', fontSize: '20px', fontWeight: 700, lineHeight: 1, textTransform: 'uppercase' }}>
+                  {business.name}
                 </div>
               </div>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '14px', lineHeight: 1.75, marginBottom: '24px', maxWidth: '260px' }}>
-              Serving Faisalabad's most authentic traditional Pakistani cuisine for generations. A landmark of taste and heritage.
+              {footer.tagline}
             </p>
             {/* Rating */}
             <div style={{
@@ -68,16 +61,16 @@ export default function Footer() {
               borderRadius: '10px', padding: '8px 14px',
             }}>
               <span style={{ color: '#D4AF37' }}>★★★★</span>
-              <span style={{ color: '#D4AF37', fontWeight: 700 }}>4.0</span>
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>619+ Reviews</span>
+              <span style={{ color: '#D4AF37', fontWeight: 700 }}>{business.ratingValue.toFixed(1)}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{business.ratingCount}+ Reviews</span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '24px' }}>
+            <h3 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '24px' }}>
               QUICK LINKS
-            </h4>
+            </h3>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {quickLinks.map(link => (
                 <li key={link.label}>
@@ -105,25 +98,23 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '24px' }}>
+            <h3 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '24px' }}>
               CONTACT
-            </h4>
+            </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <span style={{ fontSize: '16px', flexShrink: 0 }}>📍</span>
                 <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: 1.7 }}>
-                  Aminpur Bazar, Opposite Car Parking Goal,<br />
-                  Katchery Bazar Clock Tower,<br />
-                  Faisalabad, Pakistan
+                  {business.address}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <span style={{ fontSize: '16px', flexShrink: 0 }}>📞</span>
-                <a href="tel:+924126418171" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s' }}
+                <a href={phoneToTel(business.phoneDisplay)} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '14px', transition: 'color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'}
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
                 >
-                  +92 41 2641817
+                  {business.phoneDisplay}
                 </a>
               </div>
             </div>
@@ -131,9 +122,9 @@ export default function Footer() {
 
           {/* Hours */}
           <div>
-            <h4 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '24px' }}>
+            <h3 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '24px' }}>
               OPENING HOURS
-            </h4>
+            </h3>
             <div style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(212,175,55,0.15)',
@@ -143,7 +134,7 @@ export default function Footer() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>Daily</span>
-                <span style={{ color: '#D4AF37', fontWeight: 600, fontSize: '14px' }}>9:00 AM – 11:30 PM</span>
+                <span style={{ color: '#D4AF37', fontWeight: 600, fontSize: '14px' }}>{business.hoursTime}</span>
               </div>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
@@ -157,13 +148,13 @@ export default function Footer() {
             </div>
 
             {/* Social */}
-            <h4 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '14px' }}>
+            <h3 style={{ color: '#D4AF37', fontSize: '12px', letterSpacing: '3px', fontWeight: 600, marginBottom: '14px' }}>
               FOLLOW US
-            </h4>
+            </h3>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              {socialLinks.map(s => (
+              {footer.socialLinks.map(s => (
                 <a
-                  key={s.label}
+                  key={s.id}
                   href={s.href}
                   title={s.label}
                   style={{
@@ -195,12 +186,12 @@ export default function Footer() {
           gap: '12px',
         }}>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-            © {new Date().getFullYear()} Usmania Hotel · Faisalabad. All Rights Reserved.
+            © {new Date().getFullYear()} {business.name} · {business.tagline}. All Rights Reserved.
           </p>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px' }}>Rs 1 – 1,000 per person</span>
-            <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
-            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px' }}>Dine-In · Drive-Through · Takeaway · Delivery</span>
+            <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>Rs 1 – 1,000 per person</span>
+            <span style={{ color: 'rgba(255,255,255,0.3)' }}>·</span>
+            <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px' }}>Dine-In · Drive-Through · Takeaway · Delivery</span>
           </div>
         </div>
       </div>

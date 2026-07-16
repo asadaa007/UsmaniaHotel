@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-
-const hours = [
-  { day: 'Monday – Sunday', time: '9:00 AM – 11:30 PM', open: true },
-];
+import { phoneToTel } from '../config';
+import { useSiteContent } from '../lib/siteContentStore';
 
 export default function Location() {
+  const { content } = useSiteContent();
+  const { business } = content;
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
@@ -79,16 +79,14 @@ export default function Location() {
                   fontSize: '22px', flexShrink: 0,
                 }}>📍</div>
                 <div>
-                  <h4 style={{ color: '#D4AF37', fontSize: '13px', letterSpacing: '2px', fontWeight: 600, marginBottom: '8px' }}>ADDRESS</h4>
+                  <h3 style={{ color: '#D4AF37', fontSize: '13px', letterSpacing: '2px', fontWeight: 600, marginBottom: '8px' }}>ADDRESS</h3>
                   <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.6 }}>
-                    Aminpur Bazar, Opposite Car Parking Goal,<br />
-                    Katchery Bazar Clock Tower,<br />
-                    Faisalabad, Pakistan
+                    {business.address}
                   </p>
                 </div>
               </div>
               <a
-                href="https://maps.google.com/?q=Usmania+Hotel+Aminpur+Bazar+Faisalabad"
+                href={business.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -129,9 +127,9 @@ export default function Location() {
                 fontSize: '22px', flexShrink: 0,
               }}>📞</div>
               <div>
-                <h4 style={{ color: '#D4AF37', fontSize: '13px', letterSpacing: '2px', fontWeight: 600, marginBottom: '6px' }}>PHONE</h4>
+                <h3 style={{ color: '#D4AF37', fontSize: '13px', letterSpacing: '2px', fontWeight: 600, marginBottom: '6px' }}>PHONE</h3>
                 <a
-                  href="tel:+924126418171"
+                  href={phoneToTel(business.phoneDisplay)}
                   style={{
                     color: '#FFFFFF',
                     textDecoration: 'none',
@@ -140,7 +138,7 @@ export default function Location() {
                     fontFamily: "'Playfair Display', serif",
                   }}
                 >
-                  +92 41 2641817
+                  {business.phoneDisplay}
                 </a>
               </div>
             </div>
@@ -162,7 +160,7 @@ export default function Location() {
                   fontSize: '22px', flexShrink: 0,
                 }}>🕐</div>
                 <div>
-                  <h4 style={{ color: '#D4AF37', fontSize: '13px', letterSpacing: '2px', fontWeight: 600, marginBottom: '4px' }}>OPENING HOURS</h4>
+                  <h3 style={{ color: '#D4AF37', fontSize: '13px', letterSpacing: '2px', fontWeight: 600, marginBottom: '4px' }}>OPENING HOURS</h3>
                   <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '6px',
                     background: 'rgba(42,122,92,0.2)',
@@ -174,21 +172,16 @@ export default function Location() {
                   </div>
                 </div>
               </div>
-              {hours.map(h => (
-                <div
-                  key={h.day}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '12px 0',
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>{h.day}</span>
-                  <span style={{ color: h.open ? '#D4AF37' : 'rgba(255,255,255,0.4)', fontSize: '14px', fontWeight: 600 }}>{h.time}</span>
-                </div>
-              ))}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 0',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>{business.hoursDays}</span>
+                <span style={{ color: '#D4AF37', fontSize: '14px', fontWeight: 600 }}>{business.hoursTime}</span>
+              </div>
             </div>
           </motion.div>
 
@@ -207,13 +200,13 @@ export default function Location() {
             }}
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3403.069!2d73.0812!3d31.4178!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39226578c97bd0a3%3A0x2651c47cd8a3d4f0!2sUsmania%20Hotel!5e0!3m2!1sen!2spk!4v1234567890"
+              src={business.mapsEmbedUrl}
               width="100%"
               height="100%"
               style={{ border: 0, display: 'block', filter: 'invert(90%) hue-rotate(180deg)' }}
               allowFullScreen
               loading="lazy"
-              title="Usmania Hotel Location"
+              title={`${business.name} Location`}
             />
             {/* Map overlay pin */}
             <div style={{
@@ -226,8 +219,8 @@ export default function Location() {
               padding: '12px 16px',
               backdropFilter: 'blur(10px)',
             }}>
-              <div style={{ color: '#D4AF37', fontSize: '13px', fontWeight: 700 }}>📍 Usmania Hotel</div>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px' }}>Aminpur Bazar, Faisalabad</div>
+              <div style={{ color: '#D4AF37', fontSize: '13px', fontWeight: 700 }}>📍 {business.name}</div>
+              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px' }}>{business.address}</div>
             </div>
           </motion.div>
         </div>
