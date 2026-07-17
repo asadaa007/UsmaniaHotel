@@ -23,8 +23,8 @@ export default function BusinessEditor() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
         <Field label="Business Name" value={form.name} onChange={set('name')} />
         <Field label="Tagline / City" value={form.tagline} onChange={set('tagline')} />
-        <Field label="Phone (display, e.g. +92 41 2641817)" value={form.phoneDisplay} onChange={set('phoneDisplay')} />
-        <Field label="WhatsApp Number (digits only, e.g. 923020286286)" value={form.whatsappNumber} onChange={set('whatsappNumber')} />
+        <Field label="Phone Number" value={form.phoneDisplay} onChange={set('phoneDisplay')} />
+        <Field label="WhatsApp Number" value={form.whatsappNumber} onChange={set('whatsappNumber')} />
         <Field label="Hours — Days" value={form.hoursDays} onChange={set('hoursDays')} />
         <Field label="Hours — Time" value={form.hoursTime} onChange={set('hoursTime')} />
         <Field label="Rating (e.g. 4.0)" type="number" value={form.ratingValue} onChange={set('ratingValue')} />
