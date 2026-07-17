@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useSiteContent } from '../../lib/siteContentStore';
-import { colors, font, secondaryButtonStyle } from './adminTheme';
+import { colors, font } from './adminTheme';
 import BusinessEditor from './siteContent/BusinessEditor';
 import HeroEditor from './siteContent/HeroEditor';
 import AboutEditor from './siteContent/AboutEditor';
@@ -24,7 +23,6 @@ const sections = [
 ];
 
 export default function SiteContentTab() {
-  const { resetToDefaults } = useSiteContent();
   const [active, setActive] = useState('business');
   const activeSection = sections.find(s => s.id === active);
   const ActiveComponent = activeSection.Component;
@@ -50,10 +48,6 @@ export default function SiteContentTab() {
             {s.label}
           </button>
         ))}
-        <button
-          onClick={() => { if (confirm('Reset ALL site content to the original defaults? This discards every edit across every section.')) resetToDefaults(); }}
-          style={{ ...secondaryButtonStyle, marginTop: '14px', justifyContent: 'center', width: '100%', boxSizing: 'border-box' }}
-        >Reset All</button>
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>

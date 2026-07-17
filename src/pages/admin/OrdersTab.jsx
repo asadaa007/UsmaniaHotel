@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Trash2, ChevronDown, ShoppingBag, Clock, CheckCircle2, DollarSign, AlertCircle, Phone, MapPin, StickyNote } from 'lucide-react';
+import { Trash2, ChevronDown, ShoppingBag, Clock, CheckCircle2, DollarSign, AlertCircle, Phone, MapPin, StickyNote, Search } from 'lucide-react';
 import { useOrders, updateOrderStatus, deleteOrder, ORDER_STATUSES } from '../../lib/orderStore';
 import { phoneToTel } from '../../config';
 import { colors, font, cardStyle, fieldStyle, badgeStyle, dangerButtonStyle } from './adminTheme';
@@ -148,6 +148,7 @@ export default function OrdersTab() {
   const { orders, loading, error, refresh } = useOrders();
   const [expandedId, setExpandedId] = useState(null);
   const [monthFilter, setMonthFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState(null);
 
@@ -162,9 +163,18 @@ export default function OrdersTab() {
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
-    if (monthFilter === 'all') return orders;
-    return orders.filter(o => monthKey(o.date) === monthFilter);
-  }, [orders, monthFilter]);
+    const q = search.trim().toLowerCase();
+    return orders.filter(o => {
+      if (monthFilter !== 'all' && monthKey(o.date) !== monthFilter) return false;
+      if (!q) return true;
+      return (
+        o.id?.toLowerCase().includes(q) ||
+        o.customer?.name?.toLowerCase().includes(q) ||
+        o.customer?.phone?.toLowerCase().includes(q) ||
+        o.customer?.address?.toLowerCase().includes(q)
+      );
+    });
+  }, [orders, monthFilter, search]);
 
   const stats = useMemo(() => {
     const pending = filteredOrders.filter(o => o.status === 'Pending').length;
@@ -203,8 +213,19 @@ export default function OrdersTab() {
   return (
     <div style={{ fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 600 }}>Filter by month</span>
+        <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: '380px' }}>
+          <Search size={15} color={colors.textMuted} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by order #, name, phone, or address…"
+            aria-label="Search orders"
+            style={{ ...fieldStyle, paddingLeft: '34px' }}
+          />
+        </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          <span style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap' }}>Filter by month</span>
           <select
             value={monthFilter}
             onChange={e => setMonthFilter(e.target.value)}
@@ -243,6 +264,8 @@ export default function OrdersTab() {
           <p style={{ color: colors.textMuted, fontSize: '13px' }}>
             {orders.length === 0
               ? 'No orders yet. Orders placed via the website checkout will appear here.'
+              : search.trim()
+              ? `No orders match your search${monthFilter !== 'all' ? ' in this month' : ''}.`
               : 'No orders in this month.'}
           </p>
         </div>

@@ -79,7 +79,7 @@ export default function CartDrawer() {
         transition={{ type: 'spring', stiffness: 300, damping: 32 }}
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 6001,
-          width: 'min(440px, 100vw)',
+          width: 'min(520px, 100vw)',
           background: '#1E1E1E',
           boxShadow: '-10px 0 40px rgba(0,0,0,0.4)',
           display: 'flex',
