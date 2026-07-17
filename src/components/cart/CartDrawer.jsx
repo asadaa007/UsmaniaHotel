@@ -33,11 +33,13 @@ export default function CartDrawer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const handleOrderSubmit = async (customer) => {
+  const handleOrderSubmit = async (customer, addonItems = []) => {
+    const allItems = [...items, ...addonItems];
+    const addonsTotal = addonItems.reduce((sum, a) => sum + a.price * a.qty, 0);
     const newOrder = {
       customer,
-      items,
-      total,
+      items: allItems,
+      total: total + addonsTotal,
       id: `USM-${Date.now().toString().slice(-6)}`,
       date: new Date(),
     };

@@ -1,5 +1,13 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useCart } from '../../context/CartContext';
+
+// Optional sides offered at checkout. IDs are strings so they never collide with
+// numeric menu-item IDs, and each carries the same shape as a cart line item.
+const ADDONS = [
+  { id: 'addon-roti', name: 'Bread / Roti', name_ur: 'چپاتی', price: 20 },
+  { id: 'addon-raita', name: 'Raita', name_ur: 'رائیتہ', price: 60 },
+  { id: 'addon-salad', name: 'Salad', name_ur: 'سلاد', price: 80 },
+];
 
 const fieldStyle = {
   width: '100%',
@@ -24,12 +32,25 @@ const labelStyle = {
 export default function CheckoutForm({ onBack, onSubmit, submitting, error }) {
   const { total } = useCart();
   const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
+  const [addonQty, setAddonQty] = useState({});
   const [errors, setErrors] = useState({});
   const nameRef = useRef(null);
   const phoneRef = useRef(null);
   const addressRef = useRef(null);
 
   const update = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+
+  const setQty = (id, qty) => setAddonQty(prev => ({ ...prev, [id]: Math.max(0, qty) }));
+
+  const addonItems = useMemo(
+    () => ADDONS.filter(a => (addonQty[a.id] || 0) > 0).map(a => ({ ...a, qty: addonQty[a.id] })),
+    [addonQty]
+  );
+  const addonsTotal = useMemo(
+    () => addonItems.reduce((sum, a) => sum + a.price * a.qty, 0),
+    [addonItems]
+  );
+  const grandTotal = total + addonsTotal;
 
   const validate = () => {
     const next = {};
@@ -45,7 +66,7 @@ export default function CheckoutForm({ onBack, onSubmit, submitting, error }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate() && !submitting) onSubmit(form);
+    if (validate() && !submitting) onSubmit(form, addonItems);
   };
 
   return (
@@ -115,15 +136,93 @@ export default function CheckoutForm({ onBack, onSubmit, submitting, error }) {
         />
       </div>
 
+      {/* Optional add-on sides */}
+      <div>
+        <label style={labelStyle}>Add sides (optional)</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {ADDONS.map(addon => {
+            const qty = addonQty[addon.id] || 0;
+            return (
+              <div
+                key={addon.id}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${qty > 0 ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.12)'}`,
+                  borderRadius: '12px', padding: '10px 12px',
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 600 }}>
+                    {addon.name} <span className="ur" style={{ color: 'rgba(212,175,55,0.8)', fontSize: '13px' }}>{addon.name_ur}</span>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Rs {addon.price} each</div>
+                </div>
+                {qty === 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setQty(addon.id, 1)}
+                    aria-label={`Add ${addon.name}`}
+                    style={{
+                      flexShrink: 0,
+                      background: 'rgba(212,175,55,0.15)',
+                      border: '1px solid rgba(212,175,55,0.4)',
+                      color: '#D4AF37', borderRadius: '50px',
+                      padding: '7px 16px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    + Add
+                  </button>
+                ) : (
+                  <div style={{
+                    flexShrink: 0,
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    background: 'rgba(212,175,55,0.12)',
+                    border: '1px solid rgba(212,175,55,0.4)',
+                    borderRadius: '50px', padding: '2px',
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => setQty(addon.id, qty - 1)}
+                      aria-label={`Decrease ${addon.name}`}
+                      style={qtyButtonStyle}
+                    >−</button>
+                    <span aria-live="polite" style={{ color: '#D4AF37', fontSize: '14px', fontWeight: 700, minWidth: '18px', textAlign: 'center' }}>{qty}</span>
+                    <button
+                      type="button"
+                      onClick={() => setQty(addon.id, qty + 1)}
+                      aria-label={`Increase ${addon.name}`}
+                      style={qtyButtonStyle}
+                    >+</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div style={{
         background: 'rgba(212,175,55,0.08)',
         border: '1px solid rgba(212,175,55,0.25)',
         borderRadius: '12px',
         padding: '14px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        display: 'flex', flexDirection: 'column', gap: '8px',
       }}>
-        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Total (Cash on Delivery)</span>
-        <span style={{ color: '#D4AF37', fontSize: '18px', fontWeight: 700 }}>Rs {total}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(255,255,255,0.55)', fontSize: '12px' }}>
+          <span>Items</span>
+          <span>Rs {total}</span>
+        </div>
+        {addonsTotal > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(255,255,255,0.55)', fontSize: '12px' }}>
+            <span>Sides</span>
+            <span>Rs {addonsTotal}</span>
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(212,175,55,0.2)', paddingTop: '8px' }}>
+          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Total (Cash on Delivery)</span>
+          <span style={{ color: '#D4AF37', fontSize: '18px', fontWeight: 700 }}>Rs {grandTotal}</span>
+        </div>
       </div>
 
       {error && (
@@ -179,3 +278,9 @@ export default function CheckoutForm({ onBack, onSubmit, submitting, error }) {
 }
 
 const errorStyle = { color: '#E57373', fontSize: '12px', marginTop: '6px' };
+
+const qtyButtonStyle = {
+  background: 'none', border: 'none', color: '#D4AF37',
+  fontSize: '16px', fontWeight: 700, cursor: 'pointer',
+  width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+};

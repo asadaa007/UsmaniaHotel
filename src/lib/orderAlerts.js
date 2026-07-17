@@ -22,19 +22,33 @@ export function setAlertSettings(partial) {
 export function playAlertSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
-    osc.start();
-    osc.frequency.setValueAtTime(1175, ctx.currentTime + 0.15);
-    osc.stop(ctx.currentTime + 0.5);
-    osc.onended = () => ctx.close();
+    // A loud, attention-grabbing repeated two-tone alarm (like a store doorbell chime
+    // ringing several times). Square wave carries much louder than a sine at the same gain.
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.9, ctx.currentTime);
+    master.connect(ctx.destination);
+
+    const pattern = [988, 1319, 988, 1319, 988, 1319]; // B5 / E6 alternating
+    const beep = 0.16;
+    const gap = 0.06;
+    let t = ctx.currentTime + 0.02;
+
+    pattern.forEach((freq) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.8, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + beep);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(t);
+      osc.stop(t + beep + 0.02);
+      t += beep + gap;
+    });
+
+    setTimeout(() => ctx.close().catch(() => {}), Math.ceil((t - ctx.currentTime + 0.1) * 1000));
   } catch {
     // Web Audio unavailable — silently skip.
   }
